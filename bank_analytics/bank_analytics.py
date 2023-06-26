@@ -39,14 +39,22 @@ session = Session()
 
 
 # CSV file path
-csv_file = 'path/to/your/csv/file.csv'
+dkb_file = '/Users/philipp/Documents/GitHub/sample_projects/bank_analytics/dkb_file.csv'
 
 
 # Read the CSV file using Pandas
-df = pd.read_csv(csv_file)
+df = pd.read_csv(dkb_file)
 
 # Create a table in the database using SQL Alchemy
-df.to_sql('your_table_name', con=engine, if_exists='replace', index=False)
+df.to_sql('dkb', con=engine, if_exists='append', index=False)
+
+
+# Perform a select query
+results = session.query(MyTable).all()
+
+# Print the retrieved rows
+for row in results:
+    print(row.id, row.buchungstag, row.buchungstext, row.betrag)
 
 # Close the database connection
 engine.dispose()
