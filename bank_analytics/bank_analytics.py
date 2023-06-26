@@ -1,45 +1,55 @@
-from sqlalchemy import create_engine
-
 import pandas as pd
+from sqlalchemy import create_engine, Column, Integer, String, Date
+from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import sessionmaker
 
-conn = create_engine("mysql+mysqldb://userid:12345@localhost/bank_analytics")
-
-
-try:    
-    q="CREATE TABLE IF NOT EXISTS `dkb2` (buchungstag DATE,	wertstellung DATE,	buchungstext VARCHAR(255),	auftraggeber_beguenstigter VARCHAR(255),	verwendungszweck VARCHAR(255),	kontonummer VARCHAR(255),	blz VARCHAR(255),	betrag DOUBLE(24,2), 	glaeubiger_id VARCHAR(255),	mandatsreferenz	VARCHAR(255), kundenreferenz VARCHAR(255))) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;"
-   
-    conn.execute(q)
-
-except Exception as e:
-        error = str(e.__dict__['orig'])
-        print(error)
+# Create a MySQL engine
+engine = create_engine("mysql+mysqldb://{user}:{pw}@localhost/{db}"
+                       .format(user="root",
+                               pw="12345",
+                               db="bank_analytics"))
 
 
-#import of csv file into data frame 
-#df = pd.read_csv('dkb_file.csv')
+#Create a base class for declarative models
+Base = declarative_base()
+
+# Define a model for the table
+class MyTable(Base):
+    __tablename__ = 'dkb'
+
+    id = Column(Integer, primary_key=True)
+    buchungstag = Column(Date)
+    wertstellung = Column(Date)
+    buchungstext = Column(String(50))
+    auftraggeber_beguenstigter = Column(String(50))
+    verwendungszweck = Column(String(50))
+    kontonummer = Column(String(50))
+    blz = Column(String(50))
+    betrag = Column(Integer)
+    glaeubiger_id = Column(String(50))
+    mandatsreferenz = Column(String(50))
+
+# Create the table
+Base.metadata.create_all(engine)
+
+# Create a session
+Session = sessionmaker(bind=engine)
+session = Session()
 
 
-"""
-try:
 
-    #create table for each bank 
-    mydb = con.connect(
-    host="localhost",
-    user="root",
-    password="12345",
-    database="bank_analytics"
-    )
-
-    mycursor = mydb.cursor()
-
-    mycursor.execute("CREATE TABLE IF NOT EXISTS dkb (buchungstag DATE,	wertstellung DATE,	buchungstext VARCHAR(255),	auftraggeber_beguenstigter VARCHAR(255),	verwendungszweck VARCHAR(255),	kontonummer VARCHAR(255),	blz VARCHAR(255),	betrag DOUBLE(24,2), 	glaeubiger_id VARCHAR(255),	mandatsreferenz	VARCHAR(255), kundenreferenz VARCHAR(255))")
-
-    print("Tabelle dkb erstellt")
+# CSV file path
+csv_file = 'path/to/your/csv/file.csv'
 
 
+# Read the CSV file using Pandas
+df = pd.read_csv(csv_file)
 
-except Exception as e:
-    mydb.close()
-    print(str(e))
-"""
+# Create a table in the database using SQL Alchemy
+df.to_sql('your_table_name', con=engine, if_exists='replace', index=False)
+
+# Close the database connection
+engine.dispose()
+
+
 
